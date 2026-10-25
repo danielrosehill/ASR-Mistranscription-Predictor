@@ -1,6 +1,8 @@
 # ASR Mistranscription Predictor
 
-**Status: plan only (2026-10-25).** No code, data or model yet.
+**Status (2026-10-25):** plan, plus a first LLM-extrapolation run (`haiku-r1`) published as the
+dataset [`Hebrish/ASR-Error-Prediction`](https://huggingface.co/datasets/Hebrish/ASR-Error-Prediction).
+No trained predictor and no probes yet.
 
 A model that takes a list of words a speech recognition (ASR) model is known to get wrong for one
 speaker, and predicts **other words that it will also get wrong** for that speaker, so they can be
@@ -48,6 +50,27 @@ dictation history ──► retrospective fix list ──► pattern analysis �
 The full plan (data, features, model options, evaluation, how predictions enter training) is in
 [`docs/training-plan.md`](docs/training-plan.md). Undecided points are in
 [`docs/open-questions.md`](docs/open-questions.md).
+
+## Dataset and scripts
+
+Published as [`Hebrish/ASR-Error-Prediction`](https://huggingface.co/datasets/Hebrish/ASR-Error-Prediction)
+(public). Every config is split by **segment** (`codeswitching`, `tech`, `names`, `general_english`)
+so each training dataset gets its own predictions. Configs: `fixes` (positives), `candidates`
+(words to score), `predictions-<run>` (one model's scores). Card source: `dataset_card.md`.
+
+| Step | Command | Writes |
+|---|---|---|
+| 1. Inputs | `python3 scripts/build_inputs.py` | `data/fixes.jsonl`, `data/candidates.jsonl` |
+| 2. Predict | `uv run --with anthropic python scripts/predict_llm.py --run <name>` (`--dry-run` first) | `data/predictions/<name>.jsonl` |
+| 3. Publish | `with-secrets uv run --with huggingface_hub python scripts/publish.py` (`--dry-run` first) | HF dataset |
+
+Step 1 reads the public error list from HF (revision recorded in each row) and two sibling
+checkouts under `~/repos/github/audio-dictation/`: `Hebrish-App` (`data/lexicon.json`, the
+code-switching pool) and `ASR-Training` (`data/tech-terms.json`, `data/tech-packs/*.json`, the tech
+pool). Step 2 imports `ASR-Training/scripts/anthropic_batch.py`, which sends the batch through
+Daniel's LLM gateway (gateway key `ASR_TRAINING_LLM_GATEWAY_KEY`, read from Infisical) and appends
+the cost to `ASR-Training/data/llm-usage.jsonl`. So steps 1 and 2 only run on Daniel's machines;
+the published dataset is self-contained.
 
 ## Where this comes from
 

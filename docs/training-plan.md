@@ -126,7 +126,8 @@ A prediction costs recording time only once it is confirmed. Two probes, cheapes
 
 | Phase | Deliverable | Done when |
 |---|---|---|
-| 0 | Export of the fix list and negatives as one table (public fields only) | table with positives, negatives, features stubbed |
+| 0 | Export of the fix list and negatives as one table (public fields only) | table with positives, negatives, features stubbed. **Positives and candidate pools done 2026-10-25** (`Hebrish/ASR-Error-Prediction`, split by segment); negatives not yet |
+| 0b | LLM extrapolation (model option 3) per segment | **`haiku-r1` done 2026-10-25**: every candidate scored, plus open proposals for `tech` and `general_english` |
 | 1 | Features + pattern extraction script | every listed word has its alignment and pattern counts |
 | 2 | Rule baseline and classifier, time-split evaluation | precision@k vs random reported |
 | 3 | Synthetic probe, calibrated on known fixes | agreement with known labels measured |
